@@ -1,0 +1,10 @@
+.env
+*.log
+bin/
+dist/
+vendor/
+.vscode/
+.idea/
+*.swp
+*.swo
+
