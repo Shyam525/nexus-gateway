@@ -1,51 +1,48 @@
-// package gateway
-
-// // TODO: Implement gateway
-
-
-
-
-
 package gateway
 
 import (
 	"encoding/json"
 	"net/http"
-
-	"github.com/Shyam525/nexus-gateway/internal/providers"
 )
 
-type Handler struct {
-	provider providers.Provider
+type Message struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
 }
 
-func NewHandler(provider providers.Provider) *Handler {
-	return &Handler{
-		provider: provider,
-	}
+type ChatRequest struct {
+	Model    string    `json:"model"`
+	Messages []Message `json:"messages"`
+}
+
+type ChatResponse struct {
+	ID      string `json:"id"`
+	Model   string `json:"model"`
+	Content string `json:"content"`
+}
+
+type Handler struct{}
+
+func NewHandler() *Handler {
+	return &Handler{}
 }
 
 func (h *Handler) Chat(w http.ResponseWriter, r *http.Request) {
-	var req providers.ChatRequest
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
 
-	err := json.NewDecoder(r.Body).Decode(&req)
-	if err != nil {
+	var req ChatRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid JSON", http.StatusBadRequest)
 		return
 	}
 
-	if err := req.Validate(); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	response, err := h.provider.Chat(r.Context(), req)
-	if err != nil {
-		http.Error(w, "provider error", http.StatusBadGateway)
-		return
-	}
-
 	w.Header().Set("Content-Type", "application/json")
-
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(ChatResponse{
+		ID:      "chat-response",
+		Model:   req.Model,
+		Content: "This is a simple chat response.",
+	})
 }

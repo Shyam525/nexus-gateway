@@ -24,3 +24,4 @@ func New(code Code, message string) *Error {
 		Message: message,
 	}
 }
+
